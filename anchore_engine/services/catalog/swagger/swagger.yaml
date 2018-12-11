@@ -1,0 +1,1274 @@
+---
+swagger: "2.0"
+info:
+  description: "Catalog service for anchore-engine"
+  version: "0.9.1"
+  title: "Catalog"
+  contact:
+    email: "dev@anchore.com"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+#host: "localhost:83"
+basePath: "/"
+tags:
+- name: "catalog"
+  description: "Catalog Service"
+  externalDocs:
+    description: "Find out more"
+    url: "http://anchore.com"
+schemes:
+- "https"
+- "http"
+
+securityDefinitions:
+  basicAuth:
+    type: basic
+
+security:
+  - basicAuth: []
+
+paths:
+  /status:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get the status of the service"
+      description: ""
+      operationId: "status"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+  /repo:
+    post:
+      tags:
+      - "catalog"
+      summary: "Add repo to watch to the DB"
+      description: ""
+      operationId: "repo_post"
+      parameters:
+      - name: 'regrepo'
+        in: query
+        type: string
+        description: "full regrepo to add e.g. docker.io/library/alpine"
+        required: true
+      - name: 'autosubscribe'
+        in: query
+        type: boolean
+        description: "flag to enable/disable auto tag_update activation when new images from a repo are added"
+        required: false
+      - name: 'lookuptag'
+        in: query
+        type: string
+        description: "specify a tag to use for scanning a repo (default is 'latest')"
+        required: false
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+  /summaries/imagetags:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get image digest and tags summary list from DB"
+      description: ""
+      operationId: "image_tags_get"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+  /query/images/by_vulnerability:
+    get:
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+      operationId: query_images_by_vulnerability_get
+      summary: "Return image info for specified vulnerability"
+      description: "Return image info for specified vulnerability"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "vulnerability_id"
+        in: "query"
+        type: string
+        required: true
+      - name: "severity"
+        in: "query"
+        type: string
+        required: false
+      - name: "namespace"
+        in: "query"
+        type: string
+        required: false
+      - name: "affected_package"
+        in: "query"
+        type: string
+        required: false
+      - name: vendor_only
+        in: query
+        type: boolean
+        description: ""
+        required: false
+        default: true
+      responses:
+        200:
+          description: "Vulnerable image listing"
+          schema:
+            type: object
+  /query/images/by_package:
+    get:
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+      operationId: query_images_by_package_get
+      summary: "Return image info for specified package"
+      description: "Return image info for specified package"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "query"
+        type: string
+        required: true
+      - name: "version"
+        in: "query"
+        type: string
+        required: false
+      - name: "package_type"
+        in: "query"
+        type: string
+        required: false
+      responses:
+        200:
+          description: "Matched image listing"
+          schema:
+            type: object
+  /query/vulnerabilities:
+    get:
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+      operationId: query_vulnerabilities_get
+      summary: "Return vulnerability information for specified vulnerability ID"
+      description: "Return vulnerability information for specified vulnerability ID" 
+      produces:
+      - "application/json"
+      parameters:
+      - name: "id"
+        in: "query"
+        type: string
+        required: true
+      - name: "affected_package"
+        in: "query"
+        type: string
+        required: false
+      - name: "affected_package_version"
+        in: "query"
+        type: string
+        required: false
+      responses:
+        200:
+          description: "Matched vulnerability record"
+          schema:
+            type: object
+  /image:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get image records from DB"
+      description: ""
+      operationId: "image_get"
+      parameters:
+      - name: 'tag'
+        in: query
+        type: string
+        description: "tag of image to get"
+        required: false
+      - name: 'digest'
+        in: query
+        type: string
+        description: "digest of image to get"
+        required: false
+      - name: 'imageId'
+        in: query
+        type: string
+        description: "imageId of image to get"
+        required: false
+      - name: 'registry_lookup'
+        in: query
+        type: boolean
+        description: "force registry lookup"
+        required: false
+        default: false
+      - name: 'history'
+        in: query
+        type: boolean
+        description: "get all matching records for given tag"
+        required: false
+        default: false
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    post:
+      tags:
+      - "catalog"
+      summary: "Get image records from DB"
+      description: ""
+      operationId: "image_post"
+      parameters:
+      - name: 'tag'
+        in: query
+        type: string
+        description: "tag of image to add"
+        required: false
+      - name: 'digest'
+        in: query
+        type: string
+        description: "digest of image to add"
+        required: false
+      - name: 'created_at'
+        in: query
+        type: integer
+        description: "created_at timestamp override"
+        required: false
+      - name: 'bodycontent'
+        in: body
+        schema:
+          $ref: "#/definitions/ImageAddMetadata"
+        description: "object describing image to add"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /image/{imageDigest}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get image records from DB"
+      description: ""
+      operationId: "image_imageDigest_get"
+      parameters:
+      - name: 'imageDigest'
+        in: path
+        type: string
+        description: "imageDigest of image to get"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete image record from DB"
+      description: ""
+      operationId: "image_imageDigest_delete"
+      parameters:
+      - name: 'imageDigest'
+        in: path
+        type: string
+        description: "imageDigest of image to delete"
+        required: true
+      - name: 'force'
+        in: query
+        type: boolean
+        description: "force delete"
+        required: false
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    put:
+      tags:
+      - "catalog"
+      summary: "Update image record from DB"
+      description: ""
+      operationId: "image_imageDigest_put"
+      parameters:
+      - name: 'imageDigest'
+        in: path
+        type: string
+        description: "imageDigest of image to delete"
+        required: true
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "image record to update"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /registry_lookup:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get image info from registry"
+      description: ""
+      operationId: "registry_lookup"
+      parameters:
+      - name: 'tag'
+        in: query
+        type: string
+        description: "tag of image to lookup"
+        required: false
+      - name: 'digest'
+        in: query
+        type: string
+        description: "digest of image to lookup"
+        required: false
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /import:
+    post:
+      tags:
+      - "catalog"
+      summary: "Import raw anchore image record into DB"
+      description: ""
+      operationId: "image_import"
+      parameters:
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "image record to update"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /policies:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get policy records from DB"
+      description: ""
+      operationId: "list_policies"
+      parameters:
+      - name: active
+        in: query
+        type: boolean
+        required: false
+        description: "Filter policy bundles by active status"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policies"
+    post:
+      tags:
+      - "catalog"
+      summary: "Add policy record to DB"
+      description: ""
+      operationId: "add_policy"
+      parameters:
+      - name: bodycontent
+        in: body
+        schema:
+          type: object
+        description: "image record to update"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policies"
+  /policies/{policyId}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get policy record from DB"
+      description: "Get a single policy bundle"
+      operationId: "get_policy"
+      parameters:
+      - name: policyId
+        in: path
+        type: string
+        description: "policy id of object to get"
+        required: True
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policies"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete policy record from DB"
+      description: ""
+      operationId: "delete_policy"
+      parameters:
+      - name: policyId
+        in: path
+        type: string
+        description: "policy object to delete"
+        required: true
+      - name: 'cleanup_evals'
+        in: query
+        type: boolean
+        description: "delete all policy eval records associated with policyId on deletion"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policies"
+    put:
+      tags:
+      - "catalog"
+      summary: "Update policy record from DB"
+      description: ""
+      operationId: "update_policy"
+      parameters:
+      - name: policyId
+        in: path
+        type: string
+        required: true
+      - name: bodycontent
+        in: body
+        schema:
+          type: object
+        description: "Policy bundle content"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policies"
+  /evals:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get eval records from DB"
+      description: ""
+      operationId: "get_evals"
+      parameters:
+      - name: policyId
+        type: string
+        in: query
+        required: false
+      - name: imageDigest
+        type: string
+        in: query
+        required: false
+      - name: tag
+        type: string
+        in: query
+        required: false
+      - name: evalId
+        type: string
+        in: query
+        required: false
+      - name: newest_only
+        type: boolean
+        required: false
+        in: query
+      - name: interactive
+        type: boolean
+        required: false
+        in: query
+      - name: history_only
+        type: boolean
+        required: false
+        in: query
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policy_evaluations"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete eval record from DB"
+      description: ""
+      operationId: "delete_eval"
+      parameters:
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "eval object to delete"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policy_evaluations"
+    put:
+      tags:
+      - "catalog"
+      summary: "Update eval record from DB"
+      description: ""
+      operationId: "update_eval"
+      parameters:
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "eval record to update"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policy_evaluations"
+    post:
+      tags:
+      - "catalog"
+      summary: "Add eval record to DB"
+      description: ""
+      operationId: "add_eval"
+      parameters:
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "eval record to add"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.policy_evaluations"
+
+  /archive/{bucket}/{archiveid}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get document from archive"
+      description: ""
+      operationId: "archive_get"
+      parameters:
+      - name: 'bucket'
+        in: path
+        type: string
+        description: "bucket"
+        required: true
+      - name: 'archiveid'
+        in: path
+        type: string
+        description: "archiveid"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    post:
+      tags:
+      - "catalog"
+      summary: "Add document to archive"
+      description: ""
+      operationId: "archive_post"
+      parameters:
+      - name: 'bucket'
+        in: path
+        type: string
+        description: "bucket"
+        required: true
+      - name: 'archiveid'
+        in: path
+        type: string
+        description: "archiveid"
+        required: true
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "document to archive"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete a document from archive"
+      description: ""
+      operationId: "archive_delete"
+      parameters:
+      - name: 'bucket'
+        in: path
+        type: string
+        description: "bucket"
+        required: true
+      - name: 'archiveid'
+        in: path
+        type: string
+        description: "archiveid"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+  /subscriptions:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get subscription records from DB"
+      description: ""
+      operationId: "subscriptions_get"
+      parameters:
+      - name: 'subscription_key'
+        in: query
+        type: string
+        description: "filter only subscriptions matching key"
+        required: false
+      - name: 'subscription_type'
+        in: query
+        type: string
+        description: "filter only subscriptions matching type"
+        required: false
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    post:
+      tags:
+      - "catalog"
+      summary: "Add subscription record to DB"
+      description: ""
+      operationId: "subscriptions_post"
+      parameters:
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "subscription object to add"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /subscriptions/{subscriptionId}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get subscription records from DB"
+      description: ""
+      operationId: "subscriptions_subscriptionId_get"
+      parameters:
+      - name: 'subscriptionId'
+        in: path
+        type: string
+        description: "subscription Id object to get"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete subscription records from DB"
+      description: ""
+      operationId: "subscriptions_subscriptionId_delete"
+      parameters:
+      - name: 'subscriptionId'
+        in: path
+        type: string
+        description: "subscription Id object to delete"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    put:
+      tags:
+      - "catalog"
+      summary: "Add subscription record to DB"
+      description: ""
+      operationId: "subscriptions_subscriptionId_put"
+      parameters:
+      - name: 'subscriptionId'
+        in: path
+        type: string
+        description: "subscription Id of object to update"
+        required: true
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "subscription object to update"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /events:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get event records from DB"
+      description: ""
+      operationId: "events_get"
+      parameters:
+      - name: source_servicename
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: source_hostid
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: resource_type
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: resource_id
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: level
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: since
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: before
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: page
+        in: query
+        type: integer
+        description: ""
+        required: false
+        default: 1
+      - name: limit
+        in: query
+        type: integer
+        description: ""
+        required: false
+        default: 100
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete events from DB "
+      description: ""
+      operationId: "events_delete"
+      parameters:
+      - name: 'since'
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: 'before'
+        in: query
+        type: string
+        description: ""
+        required: false
+      - name: level
+        in: query
+        type: string
+        description: ""
+        required: false
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    post:
+      tags:
+      - "catalog"
+      summary: "Add event record to DB"
+      description: ""
+      operationId: "events_post"
+      parameters:
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "event record to be created"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /events/{eventId}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get an event record from DB"
+      description: ""
+      operationId: "events_eventId_get"
+      parameters:
+      - name: eventId
+        in: path
+        type: string
+        description: "uuid of the event to describe"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete event record from DB"
+      description: ""
+      operationId: "events_eventId_delete"
+      parameters:
+      - name: 'eventId'
+        in: path
+        type: string
+        description: "uuid of the event to delete"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /users:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get user records from DB"
+      description: ""
+      operationId: "users_get"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /users/{inuserId}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get user records from DB"
+      description: ""
+      operationId: "users_userId_get"
+      parameters:
+      - name: 'inuserId'
+        in: path
+        type: string
+        description: "user Id object to get"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete user records from DB"
+      description: ""
+      operationId: "users_userId_delete"
+      parameters:
+      - name: 'inuserId'
+        in: path
+        type: string
+        description: "user Id object to delete"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system/registries:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get registry records from DB"
+      description: ""
+      operationId: "system_registries_get"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    post:
+      tags:
+      - "catalog"
+      summary: "Add registry record to DB"
+      description: ""
+      operationId: "system_registries_post"
+      parameters:
+      - name: 'validate'
+        in: query
+        type: boolean
+        description: "flag to determine whether or not to validate registry/credential at registry add time"
+        required: false
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "registry object to add"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system/registries/{registry}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get registry records from DB"
+      description: ""
+      operationId: "system_registries_registry_get"
+      parameters:
+      - name: 'registry'
+        in: path
+        type: string
+        description: "registry Id object to get"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete registry records from DB"
+      description: ""
+      operationId: "system_registries_registry_delete"
+      parameters:
+      - name: 'registry'
+        in: path
+        type: string
+        description: "registry Id object to delete"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    put:
+      tags:
+      - "catalog"
+      summary: "Add registry record to DB"
+      description: ""
+      operationId: "system_registries_registry_put"
+      parameters:
+      - name: 'registry'
+        in: path
+        type: string
+        description: "registry Id of object to update"
+        required: true
+      - name: 'validate'
+        in: query
+        type: boolean
+        description: "flag to determine whether or not to validate registry/credential at registry update time"
+        required: false
+      - name: 'bodycontent'
+        in: body
+        schema:
+          type: object
+        description: "registry object to update"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get system routes"
+      description: ""
+      operationId: "system_get"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system/services:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get system services list"
+      description: ""
+      operationId: "system_services_get"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system/services/{servicename}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get hostIds for all hosts servicing servicename services"
+      description: ""
+      operationId: "system_services_servicename_get"
+      parameters:
+      - name: 'servicename'
+        in: path
+        type: string
+        description: "service name"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system/services/{servicename}/{hostId}:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get services running on hostId"
+      description: ""
+      operationId: "system_services_servicename_hostId_get"
+      parameters:
+      - name: 'servicename'
+        in: path
+        type: string
+        description: "service name"
+        required: true
+      - name: 'hostId'
+        in: path
+        type: string
+        description: "host ID"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+    delete:
+      tags:
+      - "catalog"
+      summary: "Delete registry records from DB"
+      description: ""
+      operationId: "system_services_servicename_hostId_delete"
+      parameters:
+      - name: 'servicename'
+        in: path
+        type: string
+        description: "service name"
+        required: true
+      - name: 'hostId'
+        in: path
+        type: string
+        description: "host ID"
+        required: true
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+
+  /system/subscriptions:
+    get:
+      tags:
+      - "catalog"
+      summary: "Get subscription types"
+      description: ""
+      operationId: "system_subscriptions_get"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "success"
+          schema:
+            type: object
+      x-swagger-router-controller: "anchore_engine.services.catalog.api.controllers.default_controller"
+definitions:
+  ImageAddMetadata:
+    description: Additional data to add to an image record when an image is ingressed, such as dockerfile and annotations
+    type: object
+    properties:
+      dockerfile:
+        type: string
+        description: base64 encoded content of the dockerfile used to build the image, if available
+      annotations:
+        type: object
+        description: Key-Value metadata to add to the record
+  ApiErrorResponse:
+    description: "Generic HTTP API error response"
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      error_type:
+        type: "string"
+      message:
+        type: "string"
+      detail:
+        type: object
+        description: Details structure for additional information about the error if available. Content and structure will be error specific.
